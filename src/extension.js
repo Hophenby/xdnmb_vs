@@ -13,8 +13,6 @@ const xdapi = require('./xdnmb/XDApi');
 
 //const BASE_URL = 'https://api.nmb.best/api/'
 
-//const COOKIE_FOR_DEBUG = 'userhash=%E8%F2%9F%99%F2%9ER%CC%C6%D9%EE%26%82%B4%C5%2B%B3%5CY%CD%E0TG%CF'
-
 const globals = require('./Globals');
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed

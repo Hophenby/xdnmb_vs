@@ -2,7 +2,6 @@ const vscode = require('vscode');
 const cheerio = require('cheerio');
 const axios = require('axios')
 const BASE_URL = 'https://api.nmb.best/api/'
-const COOKIE_FOR_DEBUG = 'userhash=%E8%F2%9F%99%F2%9ER%CC%C6%D9%EE%26%82%B4%C5%2B%B3%5CY%CD%E0TG%CF'
 
 
 const COMMANDS=
