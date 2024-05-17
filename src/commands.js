@@ -1,7 +1,9 @@
 const vscode = require('vscode');
 const cheerio = require('cheerio');
-const axios = require('axios')
+//const axios = require('axios')
 const BASE_URL = 'https://api.nmb.best/api/'
+
+const session = require('./Globals').session;
 
 
 const COMMANDS=
@@ -19,11 +21,7 @@ const COMMANDS=
 			return
 		}
 		try {
-			await axios.get(BASE_URL + `thread?id=${tid}&page=1`, {
-				headers: {
-					'Cookie': COOKIE_FOR_DEBUG
-				}
-			}).then((res) => {
+			await session.get(BASE_URL + `thread?id=${tid}&page=1`).then((res) => {
 				console.log(res.data)
 				//vscode.window.showInformationMessage(res.data.content)
 				let $ = cheerio.load(res.data.content)
@@ -43,7 +41,7 @@ const COMMANDS=
 
     "xdnmb_vs.refreshForumGroup" : async function(){
         const globals = require('./Globals');
-        const xdapi = require('./xdnmb/XDApi');
+        const xdapi = require('./XDApi');
         xdapi.getForumList().then(forumGroup => {
             globals.forumGroups = forumGroup;
             if (forumGroup && globals.forumListDataProvider) {
@@ -58,7 +56,7 @@ const COMMANDS=
 
     "xdnmb_vs.resetForumGroup" : async function(){
         const globals = require('./Globals');
-        const xdapi = require('./xdnmb/XDApi');
+        const xdapi = require('./XDApi');
         xdapi.getForumList().then(forumGroup => {
             globals.forumGroups = forumGroup;
             if (forumGroup && globals.forumListDataProvider) {
@@ -75,7 +73,7 @@ const COMMANDS=
 		console.debug(`xdnmb_vs.nextReply?${tid}`);
 		const vscode = require('vscode');
 		const globals = require('./Globals');
-		const xdapi = require('./xdnmb/XDApi');
+		const xdapi = require('./XDApi');
 		let currentLoadedPage = globals.loadedReplyCurrentPage.has(tid) ? globals.loadedReplyCurrentPage.get(tid) : 1;
 		let currentLoadedReply = globals.loadedReplyCurrentReply.has(tid) ? globals.loadedReplyCurrentReply.get(tid) : -1;
 		currentLoadedReply++;
@@ -95,7 +93,7 @@ const COMMANDS=
 		console.debug(`xdnmb_vs.prevReply?${tid}`);
 		const vscode = require('vscode');
 		const globals = require('./Globals');
-		const xdapi = require('./xdnmb/XDApi');
+		const xdapi = require('./XDApi');
 		let currentLoadedPage = globals.loadedReplyCurrentPage.has(tid) ? globals.loadedReplyCurrentPage.get(tid) : 1;
 		let currentLoadedReply = globals.loadedReplyCurrentReply.has(tid) ? globals.loadedReplyCurrentReply.get(tid) : -1;
 		currentLoadedReply--;

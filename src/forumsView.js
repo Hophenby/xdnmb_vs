@@ -26,7 +26,7 @@ class ForumListDataProvider {
 
     async getChildren(element) {
         const globals = require('./Globals');
-        const xdapi = require('./xdnmb/XDApi');
+        const xdapi = require('./XDApi');
         if (!globals.forumGroups) {
             return [new ThreadTreeItem('loading')];
         }
@@ -82,7 +82,7 @@ class ForumListDataProvider {
      */
     async nextPage(forum,page){
 
-        const xdapi = require('./xdnmb/XDApi');
+        const xdapi = require('./XDApi');
 
         page = (page instanceof Number) ? page + 1:this.pages[forum.fid].size+1;
         console.debug('nextPage: '+page);

@@ -9,7 +9,7 @@ const vscode = require('vscode');
 //const axios = require('axios')
 
 //const xdmodels = require('./XDModels');
-const xdapi = require('./xdnmb/XDApi');
+const xdapi = require('./XDApi');
 
 //const BASE_URL = 'https://api.nmb.best/api/'
 

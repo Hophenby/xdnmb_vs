@@ -2,7 +2,7 @@
 
 const moment = require('moment');
 
-const axios = require('axios');
+//const axios = require('axios');
 //const axiosCookieJarSupport = require('axios-cookiejar-support').wrapper;
 //const tough = require('tough-cookie');
 
@@ -19,40 +19,7 @@ const IMAGE_CDN = 'https://image.nmb.best/'
 
 
 
-
-class Session {
-    constructor() {
-        this.browser = null;
-        this.data = {};
-        this.response_code = null;
-        this.config = {};
-    }
-
-    async get(url) {
-        
-        await axios.get(url, this.config).then(response => {
-            this.data = response.data;
-            this.response_code = response.status;
-        }).catch(e => {
-            console.error(e);
-            require('vscode').window.showErrorMessage('网络请求失败: '+`${e}`);
-        });
-
-        return this;
-    }
-}
-
-const cookie = (require('vscode')).workspace.getConfiguration('xdnmb_vs').get('cookie');
-require('vscode').window.showInformationMessage(`cookie: ${cookie}`);
-
-const session = new Session();
-session.config = {
-    method: 'GET',
-    headers: {
-        //'Content-Type': 'application/json',
-        'Cookie': `userhash=${cookie}`
-    }
-};
+const session = require('./Globals').session;
 
 function _stripHTML(text){
     let $=cheerio.load(text.replace(/^\s+|\s+$/m, '\n'));
