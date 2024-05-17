@@ -72,24 +72,30 @@ async function activate(context) {
 		
 	});
 	
+	//console.debug(vscode.workspace.getConfiguration('xdnmb_vs').get('whatLangTooltip'));
+
 	vscode.languages.registerHoverProvider(
-		["typescript", "javascript", "vue"],
+		vscode.workspace.getConfiguration('xdnmb_vs').get('whatLangTooltip'),
 		{
 		  async provideHover(document, position, token) {
 			const range = document.getWordRangeAtPosition(position);
 			const word = document.getText(range);
-			if (word === "const") {
-				const tooltips=[
-					globals.loadedMdTooltip,
-					`[上一条回复](command:xdnmb_vs.prevReply?${globals.loadedReply.tid})\n\n`,
-					`[下一条回复](command:xdnmb_vs.nextReply?${globals.loadedReply.tid})\n\n`
-
-				].map(tooltip => new vscode.MarkdownString(tooltip)).map(tooltip => {tooltip.isTrusted = true;return tooltip;});
-				//hover.appendCodeblock("const", "javascript");
-				//console.debug(globals.loadedReply.);
-				//hover.isTrusted = true;
-			  return new vscode.Hover(tooltips, range);
+			const whereTooltip = vscode.workspace.getConfiguration('xdnmb_vs').get('whereTooltip');
+			let hoverflag = whereTooltip.some(tooltip => word === tooltip);
+			if (!hoverflag) {
+				return;
 			}
+			const tooltips=[
+				globals.loadedMdTooltip,
+				`[上一条回复](command:xdnmb_vs.prevReply?${globals.loadedReply.tid})\n\n`,
+				`[下一条回复](command:xdnmb_vs.nextReply?${globals.loadedReply.tid})\n\n`
+
+			].map(tooltip => new vscode.MarkdownString(tooltip)).map(tooltip => {tooltip.isTrusted = true;return tooltip;});
+			//hover.appendCodeblock("const", "javascript");
+			//console.debug(globals.loadedReply.);
+			//hover.isTrusted = true;
+		  	return new vscode.Hover(tooltips, range);
+			
 		  },
 		}
 	  );

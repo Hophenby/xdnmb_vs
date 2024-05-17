@@ -75,6 +75,16 @@
           "type": "string",
           "default": "",
           "description": "饼干（重启生效）"
+        },
+        "xdnmb_vs.whereTooltip": {
+          "type": "array",
+          "default": ["const", "string", "markdown", "plaintext"],
+          "description": "在哪些关键词上显示内容"
+        },
+        "xdnmb_vs.whatLangTooltip": {
+          "type": "array",
+          "default": ["javascript", "typescript", "json", "html", "css", "markdown", "plaintext"],
+          "description": "在哪些语言上显示内容"
         }
       }
     },
