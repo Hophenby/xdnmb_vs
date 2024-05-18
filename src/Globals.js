@@ -12,6 +12,8 @@ let loadedReplyCurrentPage = new Map() // Map<tid, number>
 
 let loadedReplyCurrentReply = new Map() // Map<tid, number>
 
+let replyNumToLoad = 1
+
 const puppeteer = require('puppeteer');
 let browser = puppeteer.launch({ headless: true });
 
@@ -61,5 +63,7 @@ module.exports = {
     loadedReplyCurrentPage: loadedReplyCurrentPage,
     loadedReplyCurrentReply: loadedReplyCurrentReply,
     //Session: Session,
-    session: session
+    session: session,
+    replyNumToLoad: replyNumToLoad
+
 }

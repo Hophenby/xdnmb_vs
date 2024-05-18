@@ -19,31 +19,35 @@
     "commands": [
       {
         "command": "xdnmb_vs.searchTid",
-        "title": "Search Thread ID"
+        "title": "搜索串ID"
       },
       {
         "command": "xdnmb_vs.refreshForumGroup",
-        "title": "Refresh Forum Group"
+        "title": "刷新板块列表"
       },
       {
         "command": "xdnmb_vs.resetForumGroup",
-        "title": "Reset Forum Group"
+        "title": "重置板块列表"
       },
       {
         "command": "xdnmb_vs.nextReply",
-        "title": "Next"
+        "title": "下一条回复"
       },
       {
         "command": "xdnmb_vs.prevReply",
-        "title": "Previous"
+        "title": "上一条回复"
       },
       {
         "command": "xdnmb_vs.firstReply",
-        "title": "First"
+        "title": "首条回复"
       },
       {
         "command": "xdnmb_vs.lastReply",
-        "title": "Last"
+        "title": "末条回复"
+      },
+      {
+        "command": "xdnmb_vs.changeNumToLoad",
+        "title": "修改加载数量"
       }
     ],
     "menus": {

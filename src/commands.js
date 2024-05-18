@@ -5,6 +5,86 @@ const BASE_URL = 'https://api.nmb.best/api/'
 
 const session = require('./Globals').session;
 
+async function _prevReply(tid, loadedReply, currentLoadedPage, currentLoadedReply) {
+	const xdapi = require('./XDApi');
+	//截胡开始
+	currentLoadedReply--;
+	//console.debug(currentLoadedReply);
+	if (currentLoadedReply < 0) {
+		currentLoadedPage--;
+		//console.debug(currentLoadedPage);
+		currentLoadedReply = loadedReply.replies.length - 1;
+		if (currentLoadedPage <= 0) {
+			currentLoadedPage = 1;
+			currentLoadedReply = -1;
+		}else{
+			loadedReply = await xdapi.getThread(tid, currentLoadedPage);
+		}
+	}
+	//loadedReplyCurrentPage.set(tid, currentLoadedPage);	//截胡输出
+	//globals.loadedReplyCurrentReply.set(tid, currentLoadedReply); //截胡输出
+	//console.debug(globals.loadedReply.replies[currentLoadedReply])
+	let md_content = ""
+	//let md_content = await globals.loadedReply.replies[currentLoadedReply].markdown();
+	if (currentLoadedReply < 0) {
+		md_content = await loadedReply.markdown();
+	}else{
+		md_content = await loadedReply.replies[currentLoadedReply].markdown();
+	}
+	let loadedMdTooltip = md_content; //截胡输出
+	//截胡结束
+	return {loadedReply, currentLoadedPage, currentLoadedReply, loadedMdTooltip};
+}
+
+async function _nextReply(tid, loadedReply, currentLoadedPage, currentLoadedReply) {
+	const xdapi = require('./XDApi');
+	currentLoadedReply++;
+	if (currentLoadedReply >= loadedReply.replies.length) {
+		currentLoadedPage++;
+		loadedReply = await xdapi.getThread(tid, currentLoadedPage);
+		currentLoadedReply = 0;
+	}
+	//globals.loadedReplyCurrentPage.set(tid, currentLoadedPage); //截胡输出
+	//globals.loadedReplyCurrentReply.set(tid, currentLoadedReply); //截胡输出
+	let md_content = await loadedReply.replies[currentLoadedReply].markdown();
+	let loadedMdTooltip = md_content; //截胡输出
+	return {loadedReply, currentLoadedPage, currentLoadedReply, loadedMdTooltip};
+}
+
+async function _nextNReplies(tid, loadedReply, currentLoadedPage, currentLoadedReply, n) {
+	//let _prevNReplies = [];
+	let mdTooltips = "";
+	let _loadedReply = loadedReply, _currentLoadedPage=currentLoadedPage, _currentLoadedReply=currentLoadedReply;
+	for(let i = 0; i < n; i++) {
+		const {loadedReply, currentLoadedPage, currentLoadedReply, loadedMdTooltip} = await _nextReply(tid, _loadedReply, _currentLoadedPage, _currentLoadedReply);
+		//_prevNReplies.push({loadedReply1, currentLoadedPage1, currentLoadedReply1, loadedMdTooltip});
+		_loadedReply = loadedReply;
+		_currentLoadedPage = currentLoadedPage;
+		_currentLoadedReply = currentLoadedReply;
+		mdTooltips += loadedMdTooltip + "\n\n";
+	}
+	return {loadedReply: _loadedReply, currentLoadedPage: _currentLoadedPage, currentLoadedReply: _currentLoadedReply, loadedMdTooltip: mdTooltips};
+}
+
+async function _prevNReplies(tid, loadedReply, currentLoadedPage, currentLoadedReply, n) {
+	//let _nextNReplies = [];
+	let {_loadedReply, _currentLoadedPage, _currentLoadedReply, mdTooltips} = await _prevReply(tid, loadedReply, currentLoadedPage, currentLoadedReply);
+	const __loadedReply = _loadedReply, __currentLoadedPage=_currentLoadedPage, __currentLoadedReply=_currentLoadedReply;
+	for(let i = 0; i < n-1; i++) {
+		const {loadedReply, currentLoadedPage, currentLoadedReply, loadedMdTooltip} = await _prevReply(tid, _loadedReply, _currentLoadedPage, _currentLoadedReply);
+		//_nextNReplies.push({loadedReply1, currentLoadedPage1, currentLoadedReply1, loadedMdTooltip});
+		_loadedReply = loadedReply;
+		_currentLoadedPage = currentLoadedPage;
+		_currentLoadedReply = currentLoadedReply;
+		mdTooltips += loadedMdTooltip + "\n\n";
+		if (currentLoadedReply < 0) {
+			break;
+		}
+	}
+	return {loadedReply: __loadedReply, currentLoadedPage: __currentLoadedPage, currentLoadedReply: __currentLoadedReply, loadedMdTooltip: mdTooltips};
+}
+
+
 
 const COMMANDS=
 {
@@ -73,54 +153,41 @@ const COMMANDS=
 		console.debug(`xdnmb_vs.nextReply?${tid}`);
 		const vscode = require('vscode');
 		const globals = require('./Globals');
-		const xdapi = require('./XDApi');
-		let currentLoadedPage = globals.loadedReplyCurrentPage.has(tid) ? globals.loadedReplyCurrentPage.get(tid) : 1;
-		let currentLoadedReply = globals.loadedReplyCurrentReply.has(tid) ? globals.loadedReplyCurrentReply.get(tid) : -1;
-		currentLoadedReply++;
-		if (currentLoadedReply >= globals.loadedReply.replies.length) {
-			currentLoadedPage++;
-			globals.loadedReply = await xdapi.getThread(tid, currentLoadedPage);
-			currentLoadedReply = 0;
-		}
-		globals.loadedReplyCurrentPage.set(tid, currentLoadedPage);
-		globals.loadedReplyCurrentReply.set(tid, currentLoadedReply);
-		let md_content = await globals.loadedReply.replies[currentLoadedReply].markdown();
-		globals.loadedMdTooltip = md_content;
-		vscode.window.showInformationMessage(`串内容已加载到悬停提示\n\n当前位置：第${currentLoadedPage}页，第${currentLoadedReply+1}条回复`);
+		//const xdapi = require('./XDApi');
+		//截胡开始
+		let numToLoad = globals.replyNumToLoad;
+		let loadedReplyCurrentPage = globals.loadedReplyCurrentPage.has(tid) ? globals.loadedReplyCurrentPage.get(tid) : 1; //截胡输入
+		let loadedReplyCurrentReply = globals.loadedReplyCurrentReply.has(tid) ? globals.loadedReplyCurrentReply.get(tid) : -1; //截胡输入
+		//const {loadedReply, currentLoadedPage, currentLoadedReply, loadedMdTooltip} = await _nextReply(tid, globals.loadedReply, loadedReplyCurrentPage, loadedReplyCurrentReply);
+		const {loadedReply, currentLoadedPage, currentLoadedReply, loadedMdTooltip} = await _nextNReplies(tid, globals.loadedReply, loadedReplyCurrentPage, loadedReplyCurrentReply, numToLoad);
+		globals.loadedReply = loadedReply; //截胡输出
+		globals.loadedReplyCurrentPage.set(tid, currentLoadedPage); //截胡输出
+		globals.loadedReplyCurrentReply.set(tid, currentLoadedReply); //截胡输出
+		//let md_content = await globals.loadedReply.replies[currentLoadedReply].markdown();
+		globals.loadedMdTooltip = loadedMdTooltip; //截胡输出
+		//截胡结束
+		vscode.window.showInformationMessage(`${numToLoad}条串内容已加载到悬停提示\n\n当前位置：第${currentLoadedPage}页，第${currentLoadedReply+1}条回复`);
 	},
 
 	"xdnmb_vs.prevReply": async function (tid) {
 		console.debug(`xdnmb_vs.prevReply?${tid}`);
 		const vscode = require('vscode');
 		const globals = require('./Globals');
-		const xdapi = require('./XDApi');
-		let currentLoadedPage = globals.loadedReplyCurrentPage.has(tid) ? globals.loadedReplyCurrentPage.get(tid) : 1;
-		let currentLoadedReply = globals.loadedReplyCurrentReply.has(tid) ? globals.loadedReplyCurrentReply.get(tid) : -1;
-		currentLoadedReply--;
-		//console.debug(currentLoadedReply);
-		if (currentLoadedReply < 0) {
-			currentLoadedPage--;
-			//console.debug(currentLoadedPage);
-			currentLoadedReply = globals.loadedReply.replies.length - 1;
-			if (currentLoadedPage <= 0) {
-				currentLoadedPage = 1;
-				currentLoadedReply = -1;
-			}else{
-				globals.loadedReply = await xdapi.getThread(tid, currentLoadedPage);
-			}
-		}
-		globals.loadedReplyCurrentPage.set(tid, currentLoadedPage);
-		globals.loadedReplyCurrentReply.set(tid, currentLoadedReply);
-		//console.debug(globals.loadedReply.replies[currentLoadedReply])
-		let md_content = ""
-		//let md_content = await globals.loadedReply.replies[currentLoadedReply].markdown();
-		if (currentLoadedReply < 0) {
-			md_content = await globals.loadedReply.markdown();
-		}else{
-			md_content = await globals.loadedReply.replies[currentLoadedReply].markdown();
-		}
-		globals.loadedMdTooltip = md_content;
-		vscode.window.showInformationMessage(`串内容已加载到悬停提示\n\n当前位置：第${currentLoadedPage}页，第${currentLoadedReply+1}条回复`);
+		//const xdapi = require('./XDApi');
+		
+		let numToLoad = globals.replyNumToLoad;
+		let loadedReplyCurrentPage = globals.loadedReplyCurrentPage.has(tid) ? globals.loadedReplyCurrentPage.get(tid) : 1; 
+		let loadedReplyCurrentReply = globals.loadedReplyCurrentReply.has(tid) ? globals.loadedReplyCurrentReply.get(tid) : -1; 
+
+		//const {loadedReply, currentLoadedPage, currentLoadedReply, loadedMdTooltip} = await _prevReply(tid, globals.loadedReply, loadedReplyCurrentPage, loadedReplyCurrentReply);
+		const {loadedReply, currentLoadedPage, currentLoadedReply, loadedMdTooltip} = await _prevNReplies(tid, globals.loadedReply, loadedReplyCurrentPage, loadedReplyCurrentReply, numToLoad);
+		
+		globals.loadedReply = loadedReply;
+		globals.loadedReplyCurrentPage.set(tid, currentLoadedPage);	
+		globals.loadedReplyCurrentReply.set(tid, currentLoadedReply); 
+		globals.loadedMdTooltip = loadedMdTooltip; 
+
+		vscode.window.showInformationMessage(`${numToLoad}条串内容已加载到悬停提示\n\n当前位置：第${currentLoadedPage}页，第${currentLoadedReply+1}条回复`);
 	},
 	"xdnmb_vs.firstReply": async function (tid) {
 		console.debug(`xdnmb_vs.firstReply?${tid}`);
@@ -154,7 +221,15 @@ const COMMANDS=
 		let md_content = await globals.loadedReply.replies[currentLoadedReply].markdown();
 		globals.loadedMdTooltip = md_content;
 		vscode.window.showInformationMessage(`串内容已加载到悬停提示\n\n当前位置：第${maxPage}页，第${currentLoadedReply+1}条回复`);
+	},
+	"xdnmb_vs.changeNumToLoad": async function (n) {
+		console.debug(`xdnmb_vs.changeNumToLoad?${n}`);
+		const vscode = require('vscode');
+		const globals = require('./Globals');
+		globals.replyNumToLoad = n;
+		vscode.window.showInformationMessage(`每次加载${n}条回复`);
 	}
+
 	
 
 }

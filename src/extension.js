@@ -87,10 +87,12 @@ async function activate(context) {
 			}
 			const tooltips=[
 				globals.loadedMdTooltip,
-				`[上一条回复](command:xdnmb_vs.prevReply?${globals.loadedReply.tid})  `,
-				`[下一条回复](command:xdnmb_vs.nextReply?${globals.loadedReply.tid})\n\n`,
-				`[第一条回复](command:xdnmb_vs.firstReply?${globals.loadedReply.tid})  `,
-				`[最后一条回复](command:xdnmb_vs.lastReply?${globals.loadedReply.tid})\n\n`,
+				`[【上${globals.replyNumToLoad}条回复】](command:xdnmb_vs.prevReply?${globals.loadedReply.tid})  `+
+				`[【下${globals.replyNumToLoad}条回复】](command:xdnmb_vs.nextReply?${globals.loadedReply.tid})\n\n`,
+				`[【首条回复】](command:xdnmb_vs.firstReply?${globals.loadedReply.tid})  `+
+				`[【最新回复】](command:xdnmb_vs.lastReply?${globals.loadedReply.tid})\n\n`,
+				"【每次加载"+[1,2,3,5,10].map(num => `[\\[${num}\\]](command:xdnmb_vs.changeNumToLoad?${num})`).join("  ")+"条回复】\n\n",
+				
 
 			].map(tooltip => new vscode.MarkdownString(tooltip)).map(tooltip => {tooltip.isTrusted = true;return tooltip;});
 			//hover.appendCodeblock("const", "javascript");
