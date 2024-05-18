@@ -142,12 +142,14 @@ async function getForum(forum, page=1) {
 }
 
 async function getThread(thread,page=1,poOnly=false){
+    console.debug(typeof thread)
     let tid = thread.tid;
-    if (thread instanceof Number) {
+    if (thread instanceof Number || typeof thread === 'number'|| typeof thread === 'string') {
         tid = thread;
     }
+    console.debug('getThread tid:'+tid);
     let response = await session.get(JSON_API_ENDPOINT + `${poOnly?'po':'thread'}?id=${tid}&page=${page}`);
-    if (thread instanceof Number) {
+    if (thread instanceof Number || typeof thread === 'number') {
         const threadRaw = response.data;
         thread = new xdmodels.Thread(
             threadRaw.id, //tid
